@@ -83,6 +83,18 @@ int iom_release(struct inode *minode, struct file *mfile)
 	return 0;
 }
 
+int dot_write() {
+    unsigned char value[10] = dot_matix_numbers[fnd_val];
+
+    int i;    
+    for(i=0;i<10;i++)
+    {
+        outw(value[i] & 0x7F, (unsigned int)iom_fpga_dot_addr + i*2);
+    }
+    
+    return 0;
+}
+
 void fnd_write(){
     unsigned int value[4] = {0, 0, 0, 0};
     value[fnd_pos] = fnd_val;
@@ -90,8 +102,11 @@ void fnd_write(){
 
     value_short = value[0] << 12 | value[1] << 8 |value[2] << 4 |value[3];
     outw(value_short,(unsigned int)iom_fpga_fnd_addr);
-    
-    return 0;
+}
+
+void led_write(){
+    unsigned short value = 0 << (fnd_val - 1);
+    outw(value, (unsigned int)iom_fpga_led_addr);
 }
 
 void set_timer()
@@ -109,7 +124,6 @@ void timer_handler()
     // write devices
     fnd_write();
 
-    
     // increase clock
     timer_clock++;
 
@@ -125,6 +139,15 @@ void timer_handler()
     }
     else{
         printk("timeout\n");
+        fnd_val = 0;
+        fnd_write();
+        outw(0, (unsigned int)iom_fpga_led_addr);
+        
+        int i;    
+        for(i=0;i<10;i++)
+        {
+            outw(0, (unsigned int)iom_fpga_dot_addr + i*2);
+        }
     }
 }
 
