@@ -49,11 +49,12 @@ struct file_operations fops = {
 int iom_open(struct inode *minode, struct file *mfile)
 {
     // open devices
-	if(fpga_dot_port_usage != 0) return -EBUSY;
-    if(fpga_fnd_port_usage != 0) return -EBUSY;
-    if(ledport_usage != 0) return -EBUSY;
-    if(fpga_text_lcd_port_usage != 0) return -EBUSY;
-    if(kernel_timer_usage != 0) return -EBUSY;
+	if(fpga_dot_port_usage 
+        || fpga_fnd_port_usage 
+        || ledport_usage 
+        || fpga_text_lcd_port_usage 
+        || kernel_timer_usage)
+        return -EBUSY;
     
     fpga_dot_port_usage = 1;
     fpga_fnd_port_usage = 1;
@@ -153,6 +154,12 @@ int __init iom_init(void)
 
     // init timer
     init_timer(&timer);
+
+    //map devices
+    iom_fpga_led_addr = ioremap(IOM_LED_ADDRESS, 0x1);
+    iom_fpga_fnd_addr = ioremap(IOM_FND_ADDRESS, 0x4);
+    iom_fpga_dot_addr = ioremap(IOM_FPGA_DOT_ADDRESS, 0x10);
+    iom_fpga_text_lcd_addr = ioremap(IOM_FPGA_TEXT_LCD_ADDRESS, 0x32);
 
 	return 0;
 }
