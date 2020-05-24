@@ -87,6 +87,9 @@ void set_timer()
 void timer_handler()
 {
     printk("blink\n");
+    timer_clock++;
+
+    
     if (timer_clock < timer_cnt){
         set_timer();
     }
