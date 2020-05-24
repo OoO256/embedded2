@@ -185,7 +185,6 @@ void timer_handler()
         }
         // turn off lcd
         unsigned char lcd_buf[33] = "                                "; // 32 blanks
-        int i;
         unsigned short int _s_value = 0;
         for(i=0; i<33; i++)
         {
