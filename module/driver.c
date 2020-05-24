@@ -111,9 +111,9 @@ void timer_handler()
 
 
     // update states
-    fnd_pos = ((fnd_pos - 1 + 1) % 8) + 1;
+    fnd_val = ((fnd_val - 1 + 1) % 8) + 1;
     if (timer_clock != 0 && timer_clock % 8  == 0)
-        fnd_val = (fnd_val + 1) % 4;
+        fnd_pos = (fnd_pos + 1) % 4;
     
 
     // check timeout 
