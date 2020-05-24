@@ -1,1 +1,0 @@
-cmd_/mnt/hw2/module/driver.ko := arm-none-linux-gnueabi-ld -EL -r  -T /work/achroimx_kernel/scripts/module-common.lds --build-id  -o /mnt/hw2/module/driver.ko /mnt/hw2/module/driver.o /mnt/hw2/module/driver.mod.o
