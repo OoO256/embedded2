@@ -105,7 +105,7 @@ void fnd_write(){
 }
 
 void led_write(){
-    unsigned short value = 0 << (fnd_val - 1);
+    unsigned short value = 1 << (fnd_val - 1);
     outw(value, (unsigned int)iom_fpga_led_addr);
 }
 
