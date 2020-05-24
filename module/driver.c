@@ -109,6 +109,9 @@ void timer_handler()
     // write devices
     fnd_write();
 
+    
+    // increase clock
+    timer_clock++;
 
     // update states
     fnd_val = ((fnd_val - 1 + 1) % 8) + 1;
@@ -123,9 +126,6 @@ void timer_handler()
     else{
         printk("timeout\n");
     }
-
-    // increase clock
-    timer_clock++;
 }
 
 int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
