@@ -123,6 +123,11 @@ void timer_handler()
 {
     // check timeout 
     if (timer_clock < timer_cnt){
+        // write devices
+        fnd_write();
+        led_write();
+        dot_write();
+        
         set_timer();
     }
     else{
@@ -141,11 +146,6 @@ void timer_handler()
             outw(0, (unsigned int)iom_fpga_dot_addr + i*2);
         }
     }
-    
-    // write devices
-    fnd_write();
-    led_write();
-    dot_write();
 
     // increase clock
     timer_clock++;
