@@ -84,8 +84,8 @@ int iom_release(struct inode *minode, struct file *mfile)
 }
 
 int dot_write() {
+    // display fnd_val on dat display
     unsigned char *value = dot_matix_numbers[fnd_val];
-
     int i;    
     for(i=0;i<10;i++)
     {
@@ -96,6 +96,7 @@ int dot_write() {
 }
 
 void fnd_write(){
+    // write fnd_val at fnd_pos of fnd display
     unsigned int value[4] = {0, 0, 0, 0};
     value[fnd_pos] = fnd_val;
     unsigned short int value_short = 0;
@@ -105,6 +106,7 @@ void fnd_write(){
 }
 
 void led_write(){
+    // turn on the led at fnd_val
     unsigned short value = 1 << (8 - fnd_val);
     outw(value, (unsigned int)iom_fpga_led_addr);
 }
@@ -119,8 +121,27 @@ void set_timer()
 
 void timer_handler()
 {
-    printk("blink\n");
-
+    // check timeout 
+    if (timer_clock < timer_cnt){
+        set_timer();
+    }
+    else{
+        printk("timeout\n");
+        
+        // reset devices
+        // turn off fnd
+        fnd_val = 0;
+        fnd_write();
+        // turn off led
+        outw(0, (unsigned int)iom_fpga_led_addr);
+        // turn off dot display
+        int i;    
+        for(i=0;i<10;i++)
+        {
+            outw(0, (unsigned int)iom_fpga_dot_addr + i*2);
+        }
+    }
+    
     // write devices
     fnd_write();
     led_write();
@@ -133,24 +154,6 @@ void timer_handler()
     fnd_val = ((fnd_val - 1 + 1) % 8) + 1;
     if (timer_clock != 0 && timer_clock % 8  == 0)
         fnd_pos = (fnd_pos + 1) % 4;
-    
-
-    // check timeout 
-    if (timer_clock < timer_cnt){
-        set_timer();
-    }
-    else{
-        printk("timeout\n");
-        fnd_val = 0;
-        fnd_write();
-        outw(0, (unsigned int)iom_fpga_led_addr);
-
-        int i;    
-        for(i=0;i<10;i++)
-        {
-            outw(0, (unsigned int)iom_fpga_dot_addr + i*2);
-        }
-    }
 }
 
 int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
