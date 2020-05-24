@@ -25,15 +25,19 @@ int main(int argc, char** argv){
     };
     printf("timer args : %d %d %d\n", args.interval, args.cnt, args.init);
     
+    // Device driver open
     int dev = open(DEVICE, O_RDWR);
     if (dev < 0){
         printf("Device open error : %s\n", DEVICE);
         exit(1);
     }
     
+    // send timer args
     ioctl(dev, IOCTL_WRITE_TIMER, &args);
+    // start timer
     ioctl(dev, IOCTL_ON);
 
+    // release devices
     close(dev);
     return 0;
 }
