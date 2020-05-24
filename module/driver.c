@@ -36,6 +36,12 @@ static int kernel_timer_usage = 0;
 int fnd_pos;
 int fnd_val;
 
+// lcd states
+char name[] = "Yonguk Lee";
+char id[] = "20171667";
+int name_period = 12;
+int id_period = 16;
+
 void set_timer();
 void timer_handler();
 
@@ -83,7 +89,40 @@ int iom_release(struct inode *minode, struct file *mfile)
 	return 0;
 }
 
-int dot_write() {
+void lcd_write()
+{
+    int space_name, space_id;
+    if (timer_clock % name_period <= 6)
+        space_name = timer_clock % name_period;
+    else
+        space_name = 12 - (timer_clock % name_period);
+    
+    if (timer_clock % id_period <= 8)
+        space_id = timer_clock % id_period;
+    else
+        space_id = 16 - (timer_clock % id_period);
+
+    unsigned char lcd_buf[33] = "                                "; // 32 blanks
+    int i;
+
+    for(i = 0; i + space_name < 16; i++){
+        lcd_buf[i + space_name] = name[i];
+    }
+    for(i = 0; i + space_id < 16; i++){
+        lcd_buf[i + space_id + 16] = id[i];
+    }
+
+
+    unsigned short int _s_value = 0;
+    for(i=0; i<33; i++)
+    {
+        _s_value = (lcd_buf[i] & 0xFF) << 8 | lcd_buf[i + 1] & 0xFF;
+        outw(_s_value,(unsigned int)iom_fpga_text_lcd_addr+i);
+        i++;
+    }
+}
+
+void dot_write() {
     // display fnd_val on dat display
     unsigned char *value = dot_matix_numbers[fnd_val];
     int i;    
@@ -91,8 +130,6 @@ int dot_write() {
     {
         outw(value[i] & 0x7F, (unsigned int)iom_fpga_dot_addr + i*2);
     }
-    
-    return 0;
 }
 
 void fnd_write(){
@@ -127,7 +164,8 @@ void timer_handler()
         fnd_write();
         led_write();
         dot_write();
-        
+        lcd_write();
+
         set_timer();
     }
     else{
@@ -144,6 +182,16 @@ void timer_handler()
         for(i=0;i<10;i++)
         {
             outw(0, (unsigned int)iom_fpga_dot_addr + i*2);
+        }
+        // turn off lcd
+        unsigned char lcd_buf[33] = "                                "; // 32 blanks
+        int i;
+        unsigned short int _s_value = 0;
+        for(i=0; i<33; i++)
+        {
+            _s_value = (lcd_buf[i] & 0xFF) << 8 | lcd_buf[i + 1] & 0xFF;
+            outw(_s_value,(unsigned int)iom_fpga_text_lcd_addr+i);
+            i++;
         }
     }
 
