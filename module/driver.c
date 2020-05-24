@@ -91,6 +91,7 @@ int iom_release(struct inode *minode, struct file *mfile)
 
 void lcd_write()
 {
+    // calculate space in front of name or id
     int space_name, space_id;
     if (timer_clock % name_period <= 6)
         space_name = timer_clock % name_period;
@@ -102,17 +103,18 @@ void lcd_write()
     else
         space_id = 16 - (timer_clock % id_period);
 
+    // write name and id on lcd buffer
     unsigned char lcd_buf[33] = "                                "; // 32 blanks
     int i;
 
-    for(i = 0; i < 10; i++){
-        lcd_buf[i + space_name] = name[i];
-    }
     for(i = 0; i < 8; i++){
-        lcd_buf[i + space_id + 16] = id[i];
+        lcd_buf[i + space_id] = id[i];
+    }
+    for(i = 0; i < 10; i++){
+        lcd_buf[16 + i + space_name] = name[i];
     }
 
-
+    // write the content of lcd buffer into lcd device
     unsigned short int _s_value = 0;
     for(i=0; i<33; i++)
     {
@@ -150,6 +152,7 @@ void led_write(){
 
 void set_timer()
 {
+    // set and add next timer
     timer.expires = jiffies + timer_interval * 10;
     timer.data = NULL;
     timer.function = timer_handler;
@@ -217,6 +220,7 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 
 	switch(cmd){
 	case IOCTL_WRITE_TIMER:
+        // set timer using ioctl
 		printk("timer set\n");
 		args = (struct timer_args *)arg;
         timer_interval = args->interval;
@@ -224,6 +228,7 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
         timer_init = args->init;
 		printk("%d %d %d\n", timer_interval, timer_cnt, timer_init);
 
+        // calculate fnd_pos and fnd_val
         sprintf(init_buf, "%04d", timer_init);
         for(i = 0; i < 4; i++)
             if(init_buf[i] != '0')
@@ -233,6 +238,7 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
         printk("pos : %d, val : %d\n", fnd_pos, fnd_val);
 		break;
 	case IOCTL_ON:
+        // start timer
 		printk("timer started\n");
         set_timer();
 		break;

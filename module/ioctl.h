@@ -2,8 +2,6 @@
 
 #define MAJOR_NUMBER 242
 #define DEVICE "/dev/dev_driver"
-#define SET_OPTION 0x9999
-#define COMMAND 0x10000
 
 struct timer_args {
     // timer 에게 전달할 인자들
