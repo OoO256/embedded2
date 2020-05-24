@@ -155,6 +155,7 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
                 break;
         fnd_pos = i;
         fnd_val = init_buf[i] - '0';
+        printk("pos : %d, val : %d\n", fnd_pos, fnd_val);
 		break;
 	case IOCTL_ON:
 		printk("timer started\n");
