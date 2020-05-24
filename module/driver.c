@@ -84,7 +84,7 @@ int iom_release(struct inode *minode, struct file *mfile)
 }
 
 int dot_write() {
-    unsigned char value[10] = dot_matix_numbers[fnd_val];
+    unsigned char *value = dot_matix_numbers[fnd_val];
 
     int i;    
     for(i=0;i<10;i++)
@@ -123,6 +123,8 @@ void timer_handler()
 
     // write devices
     fnd_write();
+    led_write();
+    dot_write();
 
     // increase clock
     timer_clock++;
@@ -142,7 +144,7 @@ void timer_handler()
         fnd_val = 0;
         fnd_write();
         outw(0, (unsigned int)iom_fpga_led_addr);
-        
+
         int i;    
         for(i=0;i<10;i++)
         {
