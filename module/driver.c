@@ -105,10 +105,10 @@ void lcd_write()
     unsigned char lcd_buf[33] = "                                "; // 32 blanks
     int i;
 
-    for(i = 0; i + space_name < 16; i++){
+    for(i = 0; i < 10; i++){
         lcd_buf[i + space_name] = name[i];
     }
-    for(i = 0; i + space_id < 16; i++){
+    for(i = 0; i < 8; i++){
         lcd_buf[i + space_id + 16] = id[i];
     }
 
