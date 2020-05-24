@@ -74,7 +74,19 @@ int iom_release(struct inode *minode, struct file *mfile)
 	return 0;
 }
 
+void fnd_write(unsigned int _value[4]){
+    unsigned int value[4];
+    int i = 0;
+    for(i = 0; i < 4; i++){
+        value[i] = _value[3-i];
+    }
+    unsigned short int value_short = 0;
 
+    value_short = value[0] << 12 | value[1] << 8 |value[2] << 4 |value[3];
+    outw(value_short,(unsigned int)iom_fpga_fnd_addr);
+    
+    return 0;
+}
 
 void set_timer()
 {
@@ -89,7 +101,9 @@ void timer_handler()
     printk("blink\n");
     timer_clock++;
 
-    
+    unsigned int buf[4] = {0, 0, 0, timer_clock};
+    fnd_write(buf);
+
     if (timer_clock < timer_cnt){
         set_timer();
     }
