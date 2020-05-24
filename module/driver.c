@@ -149,7 +149,7 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
         timer_init = args->init;
 		printk("%d %d %d\n", timer_interval, timer_cnt, timer_init);
 
-        sprintf(init_buf, "%04d", init);
+        sprintf(init_buf, "%04d", timer_init);
         for(i = 0; i < 4; i++)
             if(init_buf[i] != '0')
                 break;
