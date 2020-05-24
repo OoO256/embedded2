@@ -19,6 +19,7 @@
 static struct timer_list timer;
 static int timer_interval, timer_cnt, timer_init, timer_clock;
 
+// devcies variables
 static int fpga_dot_port_usage = 0;
 static int fpga_fnd_port_usage = 0;
 static int ledport_usage = 0;
@@ -30,6 +31,10 @@ static unsigned char *iom_fpga_led_addr;
 static unsigned char *iom_fpga_text_lcd_addr;
 
 static int kernel_timer_usage = 0;
+
+// fnd states
+int fnd_pos;
+int fnd_val;
 
 void set_timer();
 void timer_handler();
@@ -56,6 +61,7 @@ int iom_open(struct inode *minode, struct file *mfile)
         || kernel_timer_usage)
         return -EBUSY;
     
+    timer_clock = 0;
     fpga_dot_port_usage = 1;
     fpga_fnd_port_usage = 1;
     ledport_usage = 1;
@@ -66,6 +72,8 @@ int iom_open(struct inode *minode, struct file *mfile)
 
 int iom_release(struct inode *minode, struct file *mfile)
 {
+    timer_clock = 0;
+
     // release devices
 	fpga_dot_port_usage = 0;
     fpga_fnd_port_usage = 0;
@@ -75,12 +83,9 @@ int iom_release(struct inode *minode, struct file *mfile)
 	return 0;
 }
 
-void fnd_write(unsigned int _value[4]){
-    unsigned int value[4];
-    int i = 0;
-    for(i = 0; i < 4; i++){
-        value[i] = _value[3-i];
-    }
+void fnd_write(){
+    unsigned int value[4] = {0, 0, 0, 0};
+    value[fnd_pos] = fnd_val;
     unsigned short int value_short = 0;
 
     value_short = value[0] << 12 | value[1] << 8 |value[2] << 4 |value[3];
@@ -100,17 +105,27 @@ void set_timer()
 void timer_handler()
 {
     printk("blink\n");
-    timer_clock++;
 
-    unsigned int buf[4] = {0, 0, 0, timer_clock};
-    fnd_write(buf);
+    // write devices
+    fnd_write();
 
+
+    // update states
+    fnd_pos = ((fnd_pos - 1 + 1) % 8) + 1;
+    if (timer_clock != 0 && timer_clock % 8  == 0)
+        fnd_val = (fnd_val + 1) % 4;
+    
+
+    // check timeout 
     if (timer_clock < timer_cnt){
         set_timer();
     }
     else{
         printk("timeout\n");
     }
+
+    // increase clock
+    timer_clock++;
 }
 
 int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
@@ -120,8 +135,10 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
 	if(_IOC_TYPE(cmd) != IOCTL_MAGIC)    // check magic number
 		return -EINVAL;
 
-	int size = _IOC_SIZE(cmd);
+
 	struct timer_args* args;
+    char init_buf[10];
+    int i=0;
 
 	switch(cmd){
 	case IOCTL_WRITE_TIMER:
@@ -131,6 +148,13 @@ int iom_unlocked_ioctl(struct file *flip, unsigned int cmd, unsigned long arg)
         timer_cnt = args->cnt;
         timer_init = args->init;
 		printk("%d %d %d\n", timer_interval, timer_cnt, timer_init);
+
+        sprintf(init_buf, "%04d", init);
+        for(i = 0; i < 4; i++)
+            if(init_buf[i] != '0')
+                break;
+        fnd_pos = i;
+        fnd_val = init_buf[i] - '0';
 		break;
 	case IOCTL_ON:
 		printk("timer started\n");
